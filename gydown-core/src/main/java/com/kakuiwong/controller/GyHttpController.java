@@ -44,7 +44,7 @@ public class GyHttpController implements GyController {
         ThreadPoolUtil.POOL.getPool().execute(() -> downloadService.startDownload(request, fileSize));
 
         //进行存储下载进度
-        ChannelUtil.send(ctx, HttpResult.okJson("start httpDownload", request), HttpResponseStatus.OK);
+        ChannelUtil.send(ctx, HttpResult.okJson("start httpDownload", request), HttpResponseStatus.OK, request.getKeepAlive());
     }
 
     /**
@@ -63,7 +63,7 @@ public class GyHttpController implements GyController {
             downloadService.stopDownload(request);
             AllJobsStatusUtil.writeAllJobFile(GyCache.allJobsMap);
         });
-        ChannelUtil.send(ctx, HttpResult.okJson("stop download", request), HttpResponseStatus.OK);
+        ChannelUtil.send(ctx, HttpResult.okJson("stop download", request), HttpResponseStatus.OK, request.getKeepAlive());
     }
 
     /**
@@ -79,7 +79,7 @@ public class GyHttpController implements GyController {
             return;
         }
         ThreadPoolUtil.POOL.getPool().execute(() -> downloadService.deleteDownload(request));
-        ChannelUtil.send(ctx, HttpResult.okJson("delete download", request), HttpResponseStatus.OK);
+        ChannelUtil.send(ctx, HttpResult.okJson("delete download", request), HttpResponseStatus.OK, request.getKeepAlive());
     }
 
     /**
@@ -98,7 +98,7 @@ public class GyHttpController implements GyController {
             });
             GyCache.pubAllJobs();
         }
-        ChannelUtil.send(ctx, HttpResult.okJson("shutdown", request), HttpResponseStatus.OK);
+        ChannelUtil.send(ctx, HttpResult.okJson("shutdown", request), HttpResponseStatus.OK, request.getKeepAlive());
         NettyServer.getInstance().stopServerChannel();
         ThreadPoolUtil.POOL.getPool().shutdown();
     }

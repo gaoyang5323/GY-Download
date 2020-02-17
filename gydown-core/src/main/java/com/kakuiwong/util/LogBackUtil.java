@@ -6,8 +6,8 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author gaoyang
@@ -16,26 +16,17 @@ import java.io.IOException;
 public class LogBackUtil {
 
     public static void load() {
-        String file = LogBackUtil.class.getClassLoader().getResource("logback.xml").getFile();
+        InputStream resourceAsStream = LogBackUtil.class.getClassLoader().getResourceAsStream("logback.xml");
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
-            File externalConfigFile = new File(file);
-            if (!externalConfigFile.exists()) {
-                throw new IOException("Logback External Config File Parameter does not reference a file that exists");
+            if (resourceAsStream == null || resourceAsStream.available() < 1) {
+                throw new IOException("Logback External Config File Parameter exists, but does not reference a file");
             } else {
-                if (!externalConfigFile.isFile()) {
-                    throw new IOException("Logback External Config File Parameter exists, but does not reference a file");
-                } else {
-                    if (!externalConfigFile.canRead()) {
-                        throw new IOException("Logback External Config File exists and is a file, but cannot be read.");
-                    } else {
-                        JoranConfigurator configurator = new JoranConfigurator();
-                        configurator.setContext(lc);
-                        lc.reset();
-                        configurator.doConfigure(file);
-                        StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
-                    }
-                }
+                JoranConfigurator configurator = new JoranConfigurator();
+                configurator.setContext(lc);
+                lc.reset();
+                configurator.doConfigure(resourceAsStream);
+                StatusPrinter.printInCaseOfErrorsOrWarnings(lc);
             }
         } catch (Exception e) {
             e.printStackTrace();

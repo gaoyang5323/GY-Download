@@ -5,6 +5,7 @@ import com.kakuiwong.util.ChannelUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +26,15 @@ public class WebsocketLoginHandler extends ChannelInboundHandlerAdapter {
                 if (null != uri && ((uri.contains("/gyws") && uri.contains("?")) || uri.contains("/gyws"))) {
                     String[] uriArray = uri.split("\\?");
                     if (null == uriArray || uriArray.length < 2) {
-                        ChannelUtil.sendError(ctx, "password error");
+                        ChannelUtil.sendError(ctx, "password error", HttpUtil.isKeepAlive(request));
+                        ChannelUtil.release(msg);
                         return;
                     }
                     String[] paramsArray = uriArray[1].split("=");
                     if (null != paramsArray && paramsArray.length > 1) {
                         if (!"token".equals(paramsArray[0]) || !paramsArray[1].equals(Main.config.getPassword())) {
-                            ChannelUtil.sendError(ctx, "password error");
+                            ChannelUtil.sendError(ctx, "password error", HttpUtil.isKeepAlive(request));
+                            ChannelUtil.release(msg);
                             return;
                         }
                     }

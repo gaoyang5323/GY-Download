@@ -20,11 +20,11 @@ public class GyAssertUtil {
             request.setDownloadPath(Main.config.getDownloadPath());
         }
         if (fileSize == 0L) {
-            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "downloadUrl error"), HttpResponseStatus.OK);
+            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "downloadUrl error"), HttpResponseStatus.OK,request.getKeepAlive());
             return -1;
         }
         if (GyCache.threadMap.get(request.getDownloadUrl()) != null) {
-            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "download job is already exist"), HttpResponseStatus.OK);
+            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "download job is already exist"), HttpResponseStatus.OK,request.getKeepAlive());
             return -1;
         }
         return 0;
@@ -37,7 +37,7 @@ public class GyAssertUtil {
             request.setDownloadPath(Main.config.getDownloadPath());
         }
         if (request.getDownloadUrl() == null) {
-            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "downloadUrl error"), HttpResponseStatus.OK);
+            ChannelUtil.send(ctx, HttpResult.notOkJson(400, "downloadUrl error"), HttpResponseStatus.OK,request.getKeepAlive());
             return -1;
         }
         return 0;

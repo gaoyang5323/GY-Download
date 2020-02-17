@@ -6,6 +6,7 @@ import com.kakuiwong.util.ChannelUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ public class HttpLoginHandler extends ChannelInboundHandlerAdapter {
                 FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
                 String uri = fullHttpRequest.uri();
                 if ("/favicon.ico".equals(uri)) {
+                    ChannelUtil.release(fullHttpRequest);
                     return;
                 }
                 boolean ignoreUri = Arrays.stream(HttpLoginIgnore.HTML_PATH.split(",")).anyMatch(path -> path.equals(uri));
@@ -33,7 +35,8 @@ public class HttpLoginHandler extends ChannelInboundHandlerAdapter {
                 if (!ignoreUri && !ignoreResourse) {
                     String token = fullHttpRequest.headers().getAsString("token");
                     if (token == null || !token.equals(Main.config.getPassword())) {
-                        ChannelUtil.sendError(channelHandlerContext, "token error");
+                        ChannelUtil.sendError(channelHandlerContext, "token error", HttpUtil.isKeepAlive(fullHttpRequest));
+                        ChannelUtil.release(fullHttpRequest);
                         return;
                     }
                 }

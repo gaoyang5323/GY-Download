@@ -2,7 +2,7 @@ package com.kakuiwong.util;
 
 import com.alibaba.fastjson.JSON;
 import com.kakuiwong.cache.GyCache;
-import com.kakuiwong.controller.GyHttpController;
+import com.kakuiwong.contant.HttpPathContant;
 import com.kakuiwong.domain.AllJobsProperties;
 import com.kakuiwong.domain.GyHttpRequest;
 import com.kakuiwong.enums.GyStatusEnum;
@@ -31,17 +31,20 @@ import java.util.Optional;
  */
 public class AllJobsStatusUtil {
     private static Logger log = LoggerFactory.getLogger(AllJobsStatusUtil.class);
-    private static final String ALL_JOB_FILE_PATH = GyHttpController.class
-            .getClassLoader().getResource(".").getFile() + "jobs.json";
+    private static final String ALL_JOB_FILE_PATH = System.getProperty("user.dir") +
+            File.separator + HttpPathContant.CONFIG_PATH + File.separator + "jobs.json";
 
     public static void readJobs() {
 
         File file = new File(ALL_JOB_FILE_PATH);
+        if (!file.exists()) {
+            return;
+        }
         List<AllJobsProperties> allList;
         if (file.isFile()) {
             byte[] bytes = null;
             try {
-                bytes = Files.readAllBytes(Paths.get(ALL_JOB_FILE_PATH.substring(1)));
+                bytes = Files.readAllBytes(Paths.get(ALL_JOB_FILE_PATH));
 
                 allList = JSON.parseArray(new String(bytes, Charset.forName("UTF-8")), AllJobsProperties.class);
                 allList.stream().forEach(job -> {
@@ -91,9 +94,15 @@ public class AllJobsStatusUtil {
 
     public static void writeAllJobFile(Map<String, AllJobsProperties> map) {
         File file = new File(ALL_JOB_FILE_PATH);
-        if (!file.isFile()) {
-            return;
+        try {
+            if (!file.exists() && !file.createNewFile()) {
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("writeAllJobFile", e);
         }
+
         RandomAccessFile randomAccessFile = null;
         FileChannel channel = null;
         FileLock fileLock = null;

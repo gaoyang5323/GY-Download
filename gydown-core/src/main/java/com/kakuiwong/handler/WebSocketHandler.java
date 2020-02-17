@@ -38,11 +38,6 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        if (GyCache.channelList.size() > 2) {
-            ChannelFuture future = ctx.writeAndFlush(new TextWebSocketFrame("超过连接数"));
-            future.addListener(ChannelFutureListener.CLOSE);
-            return;
-        }
         GyCache.channelList.add(ctx);
     }
 

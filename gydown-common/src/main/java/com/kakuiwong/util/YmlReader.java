@@ -47,9 +47,4 @@ public class YmlReader {
             }
         });
     }
-
-    public static void main(String[] args) throws FileNotFoundException {
-        CoreYmlConfig c = new CoreYmlConfig();
-        FileInputStream inputStream = new FileInputStream(System.getProperty("user.dir") + File.separator + "app1.yml");
-    }
 }

@@ -16,6 +16,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ResourceLeakDetector;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 /**
  * @author gaoyang
@@ -26,6 +27,7 @@ public class NettyServer {
     private EventLoopGroup workerGroup;
     private Channel serverChannel;
     private final static NettyServer nettyServer = new NettyServer();
+    private final static DefaultEventExecutorGroup group = new DefaultEventExecutorGroup(16);
 
     public static NettyServer getInstance() {
         return nettyServer;
@@ -47,20 +49,24 @@ public class NettyServer {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 1024)
                 .handler(new LoggingHandler(LogLevel.DEBUG))
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel sc) throws Exception {
-                        ChannelPipeline pipeline = sc.pipeline();
-                        addHandler(pipeline);
-                    }
-                });
+                .childHandler(ChannelInitializerA.channelInitializerA);
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.ADVANCED);
         ChannelFuture cf = b.bind(config.getPort()).sync();
         serverChannel = cf.channel();
         serverChannel.closeFuture().sync();
     }
 
-    private void addHandler(ChannelPipeline pipeline) {
+    public static class ChannelInitializerA extends ChannelInitializer<SocketChannel> {
+        private static ChannelInitializerA channelInitializerA = new ChannelInitializerA();
+
+        @Override
+        protected void initChannel(SocketChannel sc) throws Exception {
+            ChannelPipeline pipeline = sc.pipeline();
+            addHandler(pipeline);
+        }
+    }
+
+    private static void addHandler(ChannelPipeline pipeline) {
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpObjectAggregator(1024 * 1024));
@@ -73,7 +79,7 @@ public class NettyServer {
 
         pipeline.addLast(new HttpLoginHandler());
         pipeline.addLast(new HttpJsonConventHandler());
-        pipeline.addLast(new HttpServerHandler());
+        pipeline.addLast(group, new HttpServerHandler());
         pipeline.addLast(new TailHandler());
     }
 
