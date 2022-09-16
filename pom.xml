@@ -16,7 +16,7 @@
 
     <properties>
         <netty-all>4.1.44.Final</netty-all>
-        <snakeyaml>1.23</snakeyaml>
+        <snakeyaml>1.31</snakeyaml>
         <fastjson>1.2.62</fastjson>
         <logback>1.2.3</logback>
         <slf4j>1.7.30</slf4j>
